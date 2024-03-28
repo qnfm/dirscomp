@@ -2,11 +2,11 @@ use std::collections::HashMap;
 use std::env;
 use std::fs::File;
 use std::io::{self, Read};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use walkdir::WalkDir;
 use blake3;
 
-fn compute_file_hash(path: PathBuf) -> io::Result<String> {
+fn compute_file_hash(path: &Path) -> io::Result<String> {
     let mut file = File::open(path)?;
     let mut hasher = blake3::Hasher::new();
     let mut buffer = Vec::new();
@@ -16,32 +16,37 @@ fn compute_file_hash(path: PathBuf) -> io::Result<String> {
     Ok(hash.to_hex().to_string())
 }
 
-fn walk_dir(dir: PathBuf) -> io::Result<HashMap<String, PathBuf>> {
+fn walk_dir(dir: &Path) -> io::Result<HashMap<String, (String, PathBuf)>> {
     let mut hashes = HashMap::new();
-    for entry in WalkDir::new(dir) {
-        let entry = entry?;
-        if entry.file_type().is_file() {
-            let hash = compute_file_hash(entry.path().to_path_buf())?;
-            hashes.insert(hash, entry.into_path());
+    for entry in WalkDir::new(dir).into_iter().filter_map(|e| e.ok()) {
+        let path = entry.path();
+        if path.is_file() {
+            let hash = compute_file_hash(path)?;
+            let relative_path = path.strip_prefix(dir)
+                .expect("Failed to get relative path")
+                .to_str()
+                .expect("Failed to convert path to string")
+                .to_string();
+            hashes.insert(hash, (relative_path, path.to_path_buf()));
         }
     }
     Ok(hashes)
 }
 
-fn compare_and_print(dir1: HashMap<String, PathBuf>, dir2: HashMap<String, PathBuf>) {
-    for (hash, path) in &dir1 {
+fn compare_and_print(dir1: HashMap<String, (String, PathBuf)>, dir2: HashMap<String, (String, PathBuf)>) {
+    for (hash, (rel_path, path)) in &dir1 {
         match dir2.get(hash) {
-            Some(path2) if path != path2 => {
-                println!("Same hash but different paths: {:?} and {:?}", path, path2);
+            Some((rel_path2, _path2)) if rel_path != rel_path2 => {
+                println!("Same hash but different relative paths: {:?} and {:?}", rel_path, rel_path2);
             },
+            Some(_) => {}, // Same hash and same relative path
             None => {
                 println!("Unique in first directory: {:?}", path);
             },
-            _ => {}
         }
     }
 
-    for (hash, path) in &dir2 {
+    for (hash, (_rel_path, path)) in &dir2 {
         if !dir1.contains_key(hash) {
             println!("Unique in second directory: {:?}", path);
         }
@@ -55,8 +60,8 @@ fn main() {
         std::process::exit(1);
     }
 
-    let dir1 = PathBuf::from(&args[1]);
-    let dir2 = PathBuf::from(&args[2]);
+    let dir1 = Path::new(&args[1]);
+    let dir2 = Path::new(&args[2]);
 
     let dir1_hashes = walk_dir(dir1).expect("Failed to walk through first directory");
     let dir2_hashes = walk_dir(dir2).expect("Failed to walk through second directory");
