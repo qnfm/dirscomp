@@ -47,7 +47,7 @@ checksum = "f7144d30dcf0fafbce74250a3963025d8d52177934239851c917d29f1df280c2"
 
 [[package]]
 name = "dirscomp"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "blake3",
  "walkdir",

@@ -33,11 +33,11 @@ fn walk_dir(dir: &Path) -> io::Result<HashMap<String, String>> {
     Ok(hashes)
 }
 
-fn compare_and_print(dir1: HashMap<String, String>, dir2: HashMap<String, String>) {
-    for (hash, rel_path) in &dir1 {
+fn compare_and_print(dir1: &HashMap<String, String>, dir2: &HashMap<String, String>) {
+    for (hash, rel_path) in dir1 {
         match dir2.get(hash) {
             Some(rel_path2) if rel_path != rel_path2 => {
-                println!("Same hash but different relative paths: {:?} and {:?}", rel_path, rel_path2);
+                println!("Same hash but different relative paths: \n{:?} and {:?}", rel_path, rel_path2);
             },
             Some(_) => {}, // Same hash and same relative path
             None => {
@@ -46,7 +46,7 @@ fn compare_and_print(dir1: HashMap<String, String>, dir2: HashMap<String, String
         }
     }
 
-    for (hash, _rel_path) in &dir2 {
+    for (hash, _rel_path) in dir2 {
         match dir1.get(hash) {
             Some(_) => {}, // Same hash and same relative path
             None => {
@@ -69,5 +69,5 @@ fn main() {
     let dir1_hashes = walk_dir(dir1).expect("Failed to walk through first directory");
     let dir2_hashes = walk_dir(dir2).expect("Failed to walk through second directory");
 
-    compare_and_print(dir1_hashes, dir2_hashes);
+    compare_and_print(&dir1_hashes, &dir2_hashes);
 }
