@@ -3,7 +3,8 @@ use std::env;
 use std::fs::File;
 use std::io::{self, Read};
 use std::path::Path;
-use walkdir::WalkDir;
+use jwalk::{Parallelism, WalkDir};
+// use walkdir::WalkDir;
 use blake3;
 
 fn compute_file_hash(path: &Path) -> io::Result<String> {
@@ -18,10 +19,10 @@ fn compute_file_hash(path: &Path) -> io::Result<String> {
 
 fn walk_dir(dir: &Path) -> io::Result<HashMap<String, String>> {
     let mut hashes = HashMap::new();
-    for entry in WalkDir::new(dir).into_iter().filter_map(|e| e.ok()) {
+    for entry in WalkDir::new(dir).parallelism(Parallelism::RayonNewPool(0)).into_iter().filter_map(|e| e.ok()) {
         let path = entry.path();
         if path.is_file() {
-            let hash = compute_file_hash(path)?;
+            let hash = compute_file_hash(&path)?;
             let relative_path = path.strip_prefix(dir)
                 .expect("Failed to get relative path")
                 .to_str()
