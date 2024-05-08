@@ -6,6 +6,6 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-blake3 = "1.5"
+blake3 = { version = "1.5", features = ["mmap"] }
 walkdir = "2.5"
 jwalk = "0.5"

@@ -1,20 +1,14 @@
 use std::collections::HashMap;
 use std::env;
-use std::fs::File;
-use std::io::{self, Read};
+use std::io::{self};
 use std::path::Path;
 use jwalk::{Parallelism, WalkDir};
-// use walkdir::WalkDir;
 use blake3;
 
 fn compute_file_hash(path: &Path) -> io::Result<String> {
-    let mut file = File::open(path)?;
     let mut hasher = blake3::Hasher::new();
-    let mut buffer = Vec::new();
-    file.read_to_end(&mut buffer)?;
-    hasher.update(&buffer);
-    let hash = hasher.finalize();
-    Ok(hash.to_hex().to_string())
+    hasher.update_mmap(path)?;
+    Ok(hasher.finalize().to_hex().to_string())
 }
 
 fn walk_dir(dir: &Path) -> io::Result<HashMap<String, String>> {
