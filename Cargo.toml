@@ -1,6 +1,6 @@
 [package]
 name = "dirscomp"
-version = "0.2.1"
+version = "0.2.2"
 edition = "2021"
 
 # Description of the package
@@ -19,5 +19,4 @@ opt-level = 3  # Optimize for speed in release builds
 
 [dependencies]
 blake3 = { version = "1.5", features = ["mmap"] }
-walkdir = "2.5"
-jwalk = "0.5"
+jwalk = "0.8"
