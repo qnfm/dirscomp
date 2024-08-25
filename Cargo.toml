@@ -3,7 +3,19 @@ name = "dirscomp"
 version = "0.2.1"
 edition = "2021"
 
+# Description of the package
+description = "A tool for comparing two directories using BLAKE3 hashing."
+homepage = "https://github.com/qnfm/dirscomp"
+repository = "https://github.com/qnfm/dirscomp"
+license = "MIT"
+authors = ["qnfm <eirivihe@gmail.com>"]
+keywords = ["directory", "comparison", "files", "hashing", "BLAKE3"]
+categories = ["command-line-utilities", "cryptography", "filesystem"]
+
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[profile.release]
+opt-level = 3  # Optimize for speed in release builds
 
 [dependencies]
 blake3 = { version = "1.5", features = ["mmap"] }
